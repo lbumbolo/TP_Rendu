@@ -65,7 +65,7 @@ bool sphere::intersect(ray const& ray_param,intersection_data& intersection) con
 
     //Le code suivant est arbitraire ett doit etre modifie
     vec3 const& p0 = ray_param.p0();
-    vec3 const& c0 = center_data;
+    // vec3 const& c0 = center_data;
 
     // a = dot(u,u);
     // b = 2*dot(u,p0-center_data);
@@ -73,26 +73,43 @@ bool sphere::intersect(ray const& ray_param,intersection_data& intersection) con
 
     float delta= 4.0f*pow(dot(p0-center_data,u),2) - 4.0f*dot(u,u)*(dot(p0-center_data,p0-center_data)-pow(radius_data,2));
 
-    if (delta<0){
-        return false;
-    }
-
-    float t1 = ((-2*dot(u,p0-center_data) - sqrt(delta))/2*dot(u,u));
-    float t2 = ((-2*dot(u,p0-center_data) + sqrt(delta))/2*dot(u,u));
     float t_inter ;
 
-    if (t1>=0 and t2>=0)
-        t_inter = fminf(t1,t2);
-    else if ( t1<0 && t2<0 ){
+    if (delta<0)
+    {
         return false;
-    }else{
-        t_inter = fmaxf(t1,t2);
     }
 
+    if (delta==0)
+    {
+        t_inter = -(2*dot(u,p0-center_data))/(2*dot(u,u));
+    }
+
+    else
+    {
+        float t1 = ((-2*dot(u,p0-center_data) - sqrt(delta))/(2*dot(u,u)));
+        float t2 = ((-2*dot(u,p0-center_data) + sqrt(delta))/(2*dot(u,u)));
+
+        if (t1>=0 and t2>=0)
+        {
+            t_inter = fminf(t1,t2);
+        }
+        
+        else if ( t1<0 && t2<0 )
+        {
+            return false;
+        }
+        
+        else
+        {
+            t_inter = fmaxf(t1,t2);
+        }
+    }
+    
 
     vec3 const& p_inter = ray_param.p0() + t_inter*u;
 
-    vec3 const& n_inter = normalized(p_inter - c0);
+    vec3 const& n_inter = normalized(p_inter - center_data);
 
     intersection.set(p_inter,n_inter,t_inter);
 
@@ -100,7 +117,4 @@ bool sphere::intersect(ray const& ray_param,intersection_data& intersection) con
 
 
 }
-
-
-
 }

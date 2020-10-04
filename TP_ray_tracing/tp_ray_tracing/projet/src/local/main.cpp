@@ -46,18 +46,23 @@ int main(int argc,char *argv[])
         shading_parameter shading;
 
         //add some 3d sphere (center,radius)
-        scene.push_back(new sphere( {-0.5f,1.0f,2.0f} , 0.9f ),
-                        material(color(0.5f,0.5f,1.0f),shading,0.5f));
-
-        scene.push_back(new sphere( {1.0f,0.8f,1.0f} , 0.2f),
-                        material(color(1.0f,0.0f,0.0f),shading,0.9f));
-
-        scene.push_back(new sphere( {1.7f,-0.2f,5.0f} , 0.3f),
-                        material(color(0.3f,1.0f,0.0f),shading,0.9f));
 
         //add some 3d plane (position,normal)
         scene.push_back(new plane( {0.0f,1.0f,0.0f} , {0.0f,-1.0f,0.0f}),
                         material(color(0.8f,0.8f,0.8f),shading,0.9f));
+        
+        //sphere violette
+        scene.push_back(new sphere( {-0.5f,1.0f,2.0f} , 0.9f ),
+                        material(color(0.5f,0.5f,1.0f),shading,0.5f));
+
+        //Sphere rouge
+        scene.push_back(new sphere( {1.0f,0.8f,1.0f} , 0.2f),
+                        material(color(1.0f,0.0f,0.0f),shading,0.9f));
+
+        //sphere verte
+        scene.push_back(new sphere( {1.7f,-0.2f,5.0f} , 0.3f),
+                        material(color(0.3f,1.0f,0.0f),shading,0.9f));
+
 
         //add a light
         scene.push_back(light( {15.0f,-10.0f,-10.0f} ));

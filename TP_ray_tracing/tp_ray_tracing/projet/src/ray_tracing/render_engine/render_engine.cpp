@@ -130,20 +130,20 @@ bool compute_intersection(ray const& r,
     bool found_intersection = false;
     int k = 0;
     float t_inter = 1000.0f;
+
     while(k<N_primitive)
     {
+        intersection_data intersection_tempo; //current intersection
         primitive_basic const & primitive = scene.get_primitive(k);
-        bool is_intersection = primitive.intersect(r,intersection);
+        bool is_intersection = primitive.intersect(r,intersection_tempo);
 
-        if(is_intersection)
+        if(is_intersection && intersection_tempo.relative<t_inter)
         {
-
-            if(intersection.relative<=t_inter)
-            {
-                t_inter = intersection.relative;
-                index_intersected_primitive = k;
-                found_intersection = true;
-            }
+            intersection = intersection_tempo;
+            t_inter = intersection.relative;
+            index_intersected_primitive = k;
+            found_intersection = true;
+            intersection = intersection_tempo;
         }
         
         ++k;
@@ -160,18 +160,20 @@ bool is_in_shadow(vec3 const& p,vec3 const& p_light, scene_parameter const& scen
     // TO DO: Calculer si le point p est dans l'ombre de la lumiere situee en p_light
     //
     // ********************************************* //
-    vec3 u = normalized(p-p_light);
-    ray return_light = ray(p,-u);
+    vec3 u = normalized(p_light-p);
+    ray return_light = ray(p,u);
 
 
     return_light.offset();
 
     intersection_data intersection; //current intersection
-    int intersected_primitive = 0;  //current index of intersected primitive
+    int intersected_primitive;  //current index of intersected primitive
 
     bool const is_intersection = compute_intersection(return_light,scene,intersection,intersected_primitive);
     
-    float max_dist=norm(p-p_light);
+
+    float max_dist=norm(p_light-p);
+
     if (is_intersection){
         if(intersection.relative<max_dist){
             return true;
