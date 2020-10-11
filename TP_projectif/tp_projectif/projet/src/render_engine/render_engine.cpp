@@ -67,10 +67,14 @@ void render(image& im,image_zbuffer& zbuffer,
     vertex_shader(p1_proj,c1_shading , p1,c1,n1 , model,view,projection);
     vertex_shader(p2_proj,c2_shading , p2,c2,n2 , model,view,projection);
 
+    std::cout<<"p0_proj: "<<p0_proj<<" p1_proj: "<<p1_proj<<" p2_proj: "<<p2_proj<<std::endl;
+
     //convert normalized coordinates to pixel coordinate
     ivec2 u0 = coordinates_to_pixel_index(p0_proj,im.Nx(),im.Ny());
     ivec2 u1 = coordinates_to_pixel_index(p1_proj,im.Nx(),im.Ny());
     ivec2 u2 = coordinates_to_pixel_index(p2_proj,im.Nx(),im.Ny());
+
+    std::cout<<"u0: "<<u0<<" u1: "<<u1<<" u2: "<<u2<<"\n"<<std::endl;
 
     //draw triangle in the screen space
     draw_triangle(im,zbuffer,u0,u1,u2 , c0_shading,c1_shading,c2_shading ,
@@ -105,13 +109,32 @@ void vertex_shader(vec3& p_proj,color& c_shading,
                    vec3 const& p,color const& c,vec3 const& n,
                    mat4 const& modelview, mat4 const& view,mat4 const& projection)
 {
-    /*************************************
-    // TO DO
-    /*************************************
-    // Completez le vertex shader
-    */
-    p_proj=p;    //a modifier
-    c_shading=c; //a modifier
+    //matrice de projection angle de vue de 60 degres,
+    // image de taille carree,
+    // sommets visibles entre z=0.1 et z=20.
+    // std::cout<<projection<<std::endl;
+    // std::cout<<" Px: "<<p.x()<<" Py: "<<p.y()<<" Pz: "<<p.z()<<std::endl;
+    p_proj = normalized(projection*modelview*p);
+
+    // std::cout<<" x: "<<p_proj.x()<<" y: "<<p_proj.y()<<" z: "<<p_proj.z()<<"\n"<<std::endl;
+    vec3 p_light = {-1.0f,-1.0f,-1.0f};
+    vec3 p_cam = {0.0f,0.0f,-1.0f};
+
+    vec3 d = normalized(p_light-p);
+    vec3 s = (2*dot(d,n)/dot(n,n))*n-d;
+    vec3 t = normalized(p - p_cam);
+
+    float K_ambiant = 0.8f;
+    float K_diffuse = 0.8f;
+    float K_specular = 0.6f;
+    int specular_exponent = 128;
+
+    float ambiant = K_ambiant;
+    float diffuse = K_diffuse*dot(n,d);
+    float specular = K_specular*pow(dot(s,t),specular_exponent);
+
+    c_shading=c*(ambiant+diffuse) + specular*color(1.0f,1.0f,1.0f);
+    // c_shading=c;
 
 }
 

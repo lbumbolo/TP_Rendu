@@ -209,9 +209,11 @@ void draw_point(image& im,image_zbuffer& zbuffer,ivec2 const& p,float const z,co
     if(p.y()<0 || p.y()>=im.Ny())
         return ;
 
-    if(z>-1 && z<1 && z<zbuffer[p])
-        zbuffer[p]=z;
-        im[p]=c;
+    if(z>-1 && z<1 && z<zbuffer(p))
+    {
+        zbuffer(p)=z;
+        im(p)=c;
+    }
 
     /*************************************
     // TO DO
@@ -220,6 +222,34 @@ void draw_point(image& im,image_zbuffer& zbuffer,ivec2 const& p,float const z,co
     //   est plus faible que zbuffer(p)
     //  Alors mettre a jour la couleur et le zbuffer
     */
+}
+
+/******* Draw line pour un z variable avec zbuffer   **********/
+void draw_line(image& im, image_zbuffer& zbuffer, ivec2 const& p0,ivec2 const& p1,color const& c0,color const& c1,float const z0, float const z1)
+{
+
+    int x0 = p0.x();
+    int y0 = p0.y();
+    int x1 = p1.x();
+    int y1 = p1.y();
+    color c;
+    float z;
+
+    // std::cout<<"p0: "<<p0<<"p1: "<<p1<<"\n"<<std::endl;
+
+    line_discrete line;
+    bresenham({x0,y0},{x1,y1},line);
+
+
+    for(int k = 0;k<line.size();++k)
+    {
+        line_interpolation_parameter interpolation(line);
+        c = (1.0f-float(interpolation[k]))*c0+float(interpolation[k])*c1;
+        z = (1.0f-float(interpolation[k]))*z0+float(interpolation[k])*z1;
+        draw_point(im,zbuffer,line[k],z,c);
+    }
+
+
 }
 
 
@@ -232,6 +262,41 @@ void draw_triangle(image& im,image_zbuffer& zbuffer,
                    float z0,float z1,float z2)
 {
 
+
+    draw_line(im,zbuffer,p0,p1,c0,c1,z0,z1);
+    draw_line(im,zbuffer,p1,p2,c1,c2,z1,z2);
+    draw_line(im,zbuffer,p2,p0,c2,c0,z2,z0);
+
+    auto scanline_c = triangle_scanline_factory(p0,p1,p2,c0,c1,c2);
+    auto scanline_z = triangle_scanline_factory(p0,p1,p2,z0,z1,z2);
+
+    auto it = scanline_c.begin();
+    auto it_z = scanline_z.begin();
+    auto it_end = scanline_c.end();
+    for( ; it!=it_end ; ++it )
+    {
+        //int const x = it->first;
+
+        auto const& left_c = it->second.left;
+        auto const& right_c = it->second.right;
+
+
+        auto const& left_z = it_z->second.left;
+        auto const& right_z = it_z->second.right;
+
+        ivec2 const& p_left = left_c.coordinate;
+        ivec2 const& p_right = right_c.coordinate;
+
+        color const& param_left = left_c.parameter;
+        color const& param_right = right_c.parameter;
+
+        float z_left = left_z.parameter;
+        float z_right = right_z.parameter;
+
+        draw_line(im,zbuffer,p_left,p_right,param_left,param_right,z_left,z_right);
+
+        ++it_z;
+    }
 
     /*************************************
     // TO DO

@@ -40,6 +40,8 @@ void draw_point(image& im,image_zbuffer& zbuffer,ivec2 const& p,float z,color co
 void draw_line(image& im,ivec2 const& p0,ivec2 const& p1,color const& c);
 /** Draw a line of varying color */
 void draw_line(image& im,ivec2 const& p0,ivec2 const& p1,color const& c0,color const& c1);
+/** Draw a line of varying color and varying z */
+void draw_line(image& im,ivec2 const& p0,ivec2 const& p1,color const& c0,color const& c1, image_zbuffer& zbuffer, float const z0, float const z1);
 
 
 
